@@ -59,7 +59,7 @@ class Attractor {
 
   }
 
-    Attractor(Particle m) {
+    attract(Particle, m) {
     let force = PVector.sub(location, m.location);   
     let d = force.mag();                              
     d = constrain(d, 5.0, 25.0);                        
@@ -115,7 +115,7 @@ class Particle {
     let sum = new PVector();
     let count = 0;
     // For every boid in the system, check if it's too close
-    for (Particle other particles) {
+    for (Particle other; particles) {
        d = PVector.dist(location, other.location);
       // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
       if ((d > 0) && (d < desiredseparation)) {
