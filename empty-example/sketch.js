@@ -21,7 +21,7 @@ function setup() {
   let m = 100;
   let attractor = new Attractor(x, y, m);
   
-  for (int i = 0; i < 150; i++) {
+  for (var i = 0; i < 150; i++) {
      let distance = random(width/3, width);
      let angle = random(TWO_PI);
      let dimension = random(1, 3);
@@ -32,9 +32,9 @@ function setup() {
 
 function draw() {
   
-  background(#080f17);
+  background(8, 15, 23);
   
-  for (i = 0; i < stars.size(); i++) {
+  for (var i = 0; i < stars.size(); i++) {
     let s = stars.get(i);
     stroke(255, 175);
     strokeWeight(s.z);
@@ -49,7 +49,7 @@ function draw() {
   }
 }
 class Attractor { 
-  Constructor(let x, let y, let m) { //float x, float y, floatm
+  Constructor(x, y, m) { //float x, float y, floatm
     this.mass = m;
     this.G = 0.1;
     this.location = new PVector(x, y);
@@ -59,13 +59,13 @@ class Attractor {
 
   }
 
-    attract(Particle m) {
+    Attractor(Particle m) {
     let force = PVector.sub(location, m.location);   
     let d = force.mag();                              
-    let d = constrain(d, 5.0, 25.0);                        
-    let force.normalize();                                  
-    let float strength = (G * mass * m.mass) / (d * d);      
-    let force.mult(strength);                                  
+    d = constrain(d, 5.0, 25.0);                        
+    force.normalize();                                  
+    let strength = (G * mass * m.mass) / (d * d);      
+    force.mult(strength);                                  
     return force;
   } 
 
@@ -89,20 +89,6 @@ class Attractor {
 // Vehicle class
 
 class Particle {
-
-  // All the usual stuff
-  let location;
-  let velocity;
-  let acceleration;
-  let mass = 1;
-  let r;
-  let maxforce;    // Maximum steering force
-  let maxspeed;    // Maximum speed
-  let life;
-  let olding;
-  let dead = false;     //Put into Constructor
-
-    // Constructor initialize all values
   Constructor(x, y, l, o) {
     this.location = new PVector(x, y);
     this.mass = 1;
