@@ -4,16 +4,16 @@ let attractor;
 
 let saveFrames = false;
 
-stars = new ArrayList();
+stars = [];
 
 function setup() {
-  size(600, 600, OPENGL);
+  createCanvas(600, 600, WEBGL);
   
   // Initializing Particle System
-  let cl = new PVector(width/2, height/2);
+  let cl = createVector(width / 2, height / 2);
   let d = width/3;
   let mp = 250000;
-  let ps = new ParticleSystem(cl, d, mp);
+  ps = new ParticleSystem(cl, d, mp);
   
   // Initializing Attractor
   let x = width/2;
@@ -25,8 +25,8 @@ function setup() {
      let distance = random(width/3, width);
      let angle = random(TWO_PI);
      let dimension = random(1, 3);
-     let s = new PVector((cos(angle)*distance)+width/2, (sin(angle)*distance)+height/2, dimension);
-     stars.add(s);
+     let s = createVector((cos(angle)*distance)+width/2, (sin(angle)*distance)+height/2, dimension);
+     stars.push(s);
   }
 }
 
@@ -34,11 +34,11 @@ function draw() {
   
   background(8, 15, 23);
   
-  for (var i = 0; i < stars.size(); i++) {
-    let s = stars.get(i);
+  for (var i = 0; i < stars.length; i++) {
+    let s = stars[i];
     stroke(255, 175);
     strokeWeight(s.z);
-    strokeCap(ROUND);
+    //strokeCap(ROUND);
     point(s.x, s.y);
   }
   
@@ -52,14 +52,14 @@ class Attractor {
   Constructor(x, y, m) { //float x, float y, floatm
     this.mass = m;
     this.G = 0.1;
-    this.location = new PVector(x, y);
+    this.location = createVector(x, y);
     this.dragging = false;
     this.rollover = false;
-    this.dragOffset = new PVector(0.0, 0.0);
+    this.dragOffset = createVector(0.0, 0.0);
 
   }
 
-    attract(Particle, m) {
+    attract(m) {
     let force = PVector.sub(location, m.location);   
     let d = force.mag();                              
     d = constrain(d, 5.0, 25.0);                        
@@ -90,13 +90,13 @@ class Attractor {
 
 class Particle {
   Constructor(x, y, l, o) {
-    this.location = new PVector(x, y);
+    this.location = createVector(x, y);
     this.mass = 1;
     this.r = 4;
     this.maxspeed = 6;
     this.maxforce = 0.1;
-    this.acceleration = new PVector(0, 0);
-    this.velocity = new PVector(random(-0.5, 0.5), random(-0.5, 0.5));
+    this.acceleration = createVector(0, 0);
+    this.velocity = createVector(random(-0.5, 0.5), random(-0.5, 0.5));
     //life = random(0.5, 1);
     this.life = l;
     this.olding = o;
@@ -105,22 +105,22 @@ class Particle {
 
    applyForce(force) {
     // We could add mass here if we want A = F / M
-    acceleration.add(force);
+    this.acceleration.push(force); //RB it was originally .add(force)
   }
 
   // Separation
   // Method checks for nearby vehicles and steers away
    separate (particles) {
     let desiredseparation = r*2;
-    let sum = new PVector();
+    let sum = createVector();
     let count = 0;
     // For every boid in the system, check if it's too close
-    for (Particle other; particles) {
-       d = PVector.dist(location, other.location);
+   for (var i = 0; i < particles.length; i++) {
+       d = PVector.dist(this.location, particles[i].location);
       // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
       if ((d > 0) && (d < desiredseparation)) {
         // Calculate vector pointing away from neighbor
-         diff = PVector.sub(location, other.location);
+         diff = PVector.sub(this.location, particles[i].location);
          diff.normalize();
          diff.div(d);        // Weight by distance
          sum.add(diff);
@@ -132,10 +132,10 @@ class Particle {
       sum.div(count);
       // Our desired vector is the average scaled to maximum speed
       sum.normalize();
-      sum.mult(maxspeed);
+      sum.mult(this.maxspeed);
       // Implement Reynolds: Steering = Desired - Velocity
-      let steer = PVector.sub(sum, velocity);
-      steer.limit(maxforce);
+      let steer = PVector.sub(sum, this.velocity);
+      steer.limit(this.maxforce);
       applyForce(steer);
     }
   }
@@ -143,25 +143,25 @@ class Particle {
 
 
   // Method to update location
-  function update() {
+   update() {
     // Update velocity
-    velocity.add(acceleration);
+    this.velocity.push(this.acceleration); //RB Originally .add(this.accel)
     // Limit speed
-    velocity.limit(maxspeed);
-    location.add(velocity);
+    this.velocity.limit(this.maxspeed);
+    this.location.push(this.velocity); //RB Originally .add(this.vel)
     // Reset accelertion to 0 each cycle
-    acceleration.mult(0);
+    this.acceleration.mult(0);
     
     
-    life -= olding;
-    if (life < 0.0) {
-      dead = true;
+    this.life -= this.olding;
+    if (this.life < 0.0) {
+      this.dead = true;
     }
   }
 
-  function display() {
+    display() {
     fill(255);
-    stroke(255, 255*life);
+    stroke(255, 255*this.life);
     strokeWeight(1.2);
     push();
     //blendMode(ADD);
@@ -171,15 +171,15 @@ class Particle {
     pop();
   }
   
-  function xpos() {
+  xpos() {
     return location.x;
   }
   
-  function ypos() {
+  ypos() {
     return location.y;
   }
   
-  function isDead() {
+  isDead() {
     return dead;
   }
 }
@@ -190,31 +190,31 @@ class Particle {
 
 
 class ParticleSystem {
-  Constructor(let cl, let float d, let int mp) { //pvector cl
+  Constructor(cl,d,mp) { //pvector cl
 
-    this.particles = new ArrayList<Particle>();
+    this.particles = [];
 
-    this.centerLocation = cl.get();
+    this.centerLocation = cl.get(); //RB should get() be get[]
     this.dimen = d;
     this.max_particles = mp;
   }
 
   addParticles() {
-    if (particles.size() < max_particles) {
-      for (int i = 0; i < 2000; i++) {
+    if (particles.length < this.max_particles) {
+      for (i = 0; i < 2000; i++) {
         //float angle = random(PI)-PI/1.6;
         let angle = random(PI);
         let life = map(sin(angle), 0, 1, 0.5, 1);
         let olding = map(sin(angle), 0, 1, 0.019, 0.011);
-        let angle -= PI/1.5;
+       angle -= PI/1.5;
         let p = new Particle((cos(angle)*dimen)+centerLocation.x, (sin(angle)*dimen)+centerLocation.y, life, olding);
-        let particles.add(p);
+         particles.push(p);
       }
     }
   }
 
   runParticles() {
-    for (int i = 0; i < particles.size (); i++) {
+    for (i = 0; i < particles.size (); i++) {
       let v = particles.get(i);
       
       // Call the generic run method (update, display)
@@ -227,16 +227,17 @@ class ParticleSystem {
     }
   }
   
-  applyGravity(Attractor a) {
-    for (Particle p : particles) {
-      PVector force = a.attract(p);
-      p.applyForce(force);
+  applyGravity(a) {
+    for (i = 0; i < particles.length; i++) { //RB originally .size
+      let force = a.attract(particles[i]);
+      particles[i].applyForce(force);
     }
   }
   
-  run(Attractor a) {
+  run(a) {
     addParticles();
     runParticles();
     applyGravity(a);
   }
 }
+    
