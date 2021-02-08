@@ -19,7 +19,7 @@ function setup() {
   let x = width/2;
   let y = height/2;
   let m = 100;
-  let attractor = new Attractor(x, y, m);
+  attractor = new Attractor(x, y, m);
   
   for (var i = 0; i < 150; i++) {
      let distance = random(width/3, width);
@@ -44,9 +44,9 @@ function draw() {
   
   ps.run(attractor);
   
-  if(saveframes == true) {
-    saveFrame("moon####.jpg");
-  }
+  // if(saveframes == true) {
+  //   saveFrame("moon####.jpg");
+  // }
 }
 class Attractor { 
   Constructor(x, y, m) { //float x, float y, floatm
@@ -60,25 +60,25 @@ class Attractor {
   }
 
     attract(m) {
-    let force = PVector.sub(location, m.location);   
+    let force = createVector.sub(this.location, m.location);   
     let d = force.mag();                              
     d = constrain(d, 5.0, 25.0);                        
     force.normalize();                                  
-    let strength = (G * mass * m.mass) / (d * d);      
+    let strength = (G * this.mass * m.mass) / (d * d);      
     force.mult(strength);                                  
     return force;
   } 
 
    xpos() {
-    return location.x;
+    return this.location.x;
   }
 
    ypos() {
-    return location.y;
+    return this.location.y;
   }
 
    mass() {
-    return mass;
+    return this.mass;
   }
 }
 
@@ -105,7 +105,7 @@ class Particle {
 
    applyForce(force) {
     // We could add mass here if we want A = F / M
-    this.acceleration.push(force); //RB it was originally .add(force)
+    this.acceleration.add(force); //RB it was originally .add(force)
   }
 
   // Separation
@@ -134,7 +134,7 @@ class Particle {
       sum.normalize();
       sum.mult(this.maxspeed);
       // Implement Reynolds: Steering = Desired - Velocity
-      let steer = PVector.sub(sum, this.velocity);
+      let steer = createVector.sub(sum, this.velocity);
       steer.limit(this.maxforce);
       applyForce(steer);
     }
@@ -165,22 +165,22 @@ class Particle {
     strokeWeight(1.2);
     push();
     //blendMode(ADD);
-    translate(location.x, location.y);
+    translate(this.location.x, this.location.y);
     point(0, 0);
     //ellipse(0, 0, r, r);
     pop();
   }
   
   xpos() {
-    return location.x;
+    return this.location.x;
   }
   
   ypos() {
-    return location.y;
+    return this.location.y;
   }
   
   isDead() {
-    return dead;
+    return this.dead;
   }
 }
 
@@ -208,29 +208,29 @@ class ParticleSystem {
         let olding = map(sin(angle), 0, 1, 0.019, 0.011);
        angle -= PI/1.5;
         let p = new Particle((cos(angle)*dimen)+centerLocation.x, (sin(angle)*dimen)+centerLocation.y, life, olding);
-         particles.push(p);
+         this.particles.push(p);
       }
     }
   }
 
   runParticles() {
-    for (i = 0; i < particles.size (); i++) {
-      let v = particles.get(i);
+    for (i = 0; i < this.particles.size (); i++) {
+      let v = this.particles.get(i);
       
       // Call the generic run method (update, display)
       v.update();
       v.display();
 
       if (v.isDead()) {
-        particles.remove(i);
+        this.particles.remove(i);
       }
     }
   }
   
   applyGravity(a) {
-    for (i = 0; i < particles.length; i++) { //RB originally .size
-      let force = a.attract(particles[i]);
-      particles[i].applyForce(force);
+    for (i = 0; i < this.particles.length; i++) { //RB originally .size
+      let force = a.attract(this.particles[i]);
+      this.particles[i].applyForce(force);
     }
   }
   
